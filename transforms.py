@@ -11,7 +11,7 @@ spark = SparkSession.builder.appName("demo").getOrCreate()
 
 
 df_parquet = spark.read.parquet('nyctripdata') # inferschema, header and multiline do not help.
-#df_parquet.printSchema()
+df_parquet.printSchema()
 df_parquet.limit(15).show()
 #print(df_parquet.count())
 '''
@@ -34,7 +34,7 @@ df_parquet.limit(15).show()
 '''
     WITHCOLUMN
 '''
-#df_parquet.withColumn('const_flag',lit('Y')).show() # lit = literal   create a constant value col
+df_parquet.withColumn('const_flag',lit('Y')).show() # lit = literal   create a constant value col
 #df_parquet.withColumn('totals',col('base_passenger_fare')+col('tips')+col('tolls')-col('sales_tax')-col('driver_pay')).show() # calculated and create new col
 #df_parquet.withColumn('wav_match_flag',regexp_replace(col('wav_match_flag'),"Y","Yes"))\
 #            .withColumn('wav_match_flag',regexp_replace(col('wav_match_flag'),"N","No")).show() # transform values in a column
@@ -47,8 +47,8 @@ df_parquet.limit(15).show()
 '''
     SORTING
 '''
-df_parquet.sort(col('tips').desc()).show() 
-df_parquet.sort(col('tips').asc()).show() 
+#df_parquet.sort(col('tips').desc()).show() 
+#df_parquet.sort(col('tips').asc()).show() 
 # df_parquet.sort(col('base_passenger_fare').asc()).show()
 # df_parquet.sort(['tips','base_passenger_fare'],ascending = [0,0]).show() #sort multiple columns, perform descending twice on the two columns in that order, the list represents yes,no for both columns
 # df_parquet.sort(['tips','base_passenger_fare'],ascending = [0,1]).show() # now this sorts descending on tips, then ascending on base passenger fare
@@ -101,14 +101,14 @@ df_parquet.sort(col('tips').asc()).show()
 '''
     NULL HANDLING
 '''
-# df_parquet.dropna('all').show() # drops rows that is all NULL -> NULL NULL NULL NULL
-# df_parquet.dropna('any').show() # drops rows that contains any amount of NULLs ->       2 3 NULL 5    or   NULL 4 1 5
-# df_parquet.dropna(subset=['originating_base_num']).show() # drops rows where originating base num col is NULL
+df_parquet.dropna('all').show() # drops rows that is all NULL -> NULL NULL NULL NULL
+df_parquet.dropna('any').show() # drops rows that contains any amount of NULLs ->       2 3 NULL 5    or   NULL 4 1 5
+df_parquet.dropna(subset=['originating_base_num']).show() # drops rows where originating base num col is NULL
 
-# # Filling Nulls:
+# Filling Nulls:
 
-# df_parquet.fillna('NotAvailable').show()
-# df_parquet.fillna('NotAvailable',subset=['originating_base_num']).show()
+df_parquet.fillna('NotAvailable').show()
+df_parquet.fillna('NotAvailable',subset=['originating_base_num']).show()
 
 '''
     SPLIT and INDEXING

@@ -1,0 +1,4 @@
+**/nyctripdata
+
+test_folder/*
+!test_folder/.gitkeep
