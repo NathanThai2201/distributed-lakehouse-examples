@@ -9,8 +9,18 @@ spark = SparkSession.builder.appName("demo").getOrCreate()
 
 
 
+df_parquet = spark.read.parquet('./test_folder/yellow_tripdata_2025-01.parquet',
+                        './test_folder/yellow_tripdata_2025-02.parquet',
+                        './test_folder/yellow_tripdata_2025-03.parquet',
+                        './test_folder/yellow_tripdata_2025-04.parquet',
+                        './test_folder/yellow_tripdata_2025-05.parquet',
+                        './test_folder/yellow_tripdata_2025-06.parquet',
+                        './test_folder/yellow_tripdata_2025-07.parquet',
+                        './test_folder/yellow_tripdata_2025-08.parquet',
+                        './test_folder/yellow_tripdata_2025-10.parquet',
+                        './test_folder/yellow_tripdata_2025-11.parquet') # inferschema, header and multiline do not help.
 
-df_parquet = spark.read.parquet('nyctripdata') # inferschema, header and multiline do not help.
+#df_parquet = spark.read.parquet('nyctripdata') # inferschema, header and multiline do not help.
 df_parquet.printSchema()
 df_parquet.limit(15).show()
 #print(df_parquet.count())
