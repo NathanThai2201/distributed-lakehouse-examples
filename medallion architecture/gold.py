@@ -3,17 +3,21 @@ from pyspark.sql.functions import * # col, from_json, split, when, avg
 from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
-spark = SparkSession.builder.appName("demo").getOrCreate()
+spark = SparkSession.builder \
+    .appName("demo") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
+    .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
+    .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
+    .config("spark.hadoop.fs.s3a.path.style.access", "true") \
+    .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false") \
+    .getOrCreate()
 
 
+df_parquet = spark.read.parquet("s3a://silver/yellow_tripdata_2025.parquet")
 
-
-
-df_parquet = spark.read.parquet("../test_folder/yellow_tripdata_2025-01.parquet")
-
-#df_parquet = spark.read.parquet("hdfs://instance-20260312-012701:9000/data/yellow_tripdata_2025-01.parquet")
-df_parquet.printSchema()
-df_parquet.limit(15).show()
+print("### Reading gold data, aggregating")
+#df_parquet.printSchema()
+#df_parquet.limit(15).show()
 
 
 # trip duration:
@@ -119,8 +123,7 @@ df = df.withColumn("avg_speed_mph", round(col("avg_speed_mph"), 2))
 df = df.withColumn("fare_per_passenger", round(col("fare_per_passenger"), 2))
 df = df.withColumn("revenue_per_minute", round(col("revenue_per_minute"), 2))
 
-
 df.show()
 
-
-df.write.mode("overwrite").parquet("enriched_nyctripdata")
+print("### Writing to gold")
+df.write.mode("overwrite").parquet("s3a://gold/yellow_tripdata_2025.parquet")

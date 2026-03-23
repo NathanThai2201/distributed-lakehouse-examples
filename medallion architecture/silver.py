@@ -3,13 +3,19 @@ from pyspark.sql.functions import * # col, from_json, split, when, avg
 from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
-spark = SparkSession.builder.appName("demo").getOrCreate()
+spark = SparkSession.builder \
+    .appName("demo") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
+    .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
+    .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
+    .config("spark.hadoop.fs.s3a.path.style.access", "true") \
+    .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false") \
+    .getOrCreate()
 
 
+df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
 
-
-df= spark.read.parquet("../test_folder/yellow_tripdata_2025-01.parquet")
-
+print("### Reading bronze data, cleaning")
 #df_parquet = spark.read.parquet("hdfs://instance-20260312-012701:9000/data/yellow_tripdata_2025-01.parquet")
 #df.printSchema()
 #df.limit(20).show()
@@ -49,3 +55,6 @@ df = df.withColumn(
 )
 
 df = df.filter(col("trip_duration_minutes") > 0)
+
+print("### Writing to silver")
+df.write.mode("overwrite").parquet("s3a://silver/yellow_tripdata_2025.parquet")
