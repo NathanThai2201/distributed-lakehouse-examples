@@ -42,8 +42,5 @@ print("### Writing to bronze")
 
 
 # minIO written with iceberg table
-## Create the database if it doesn't exist
-spark.sql("CREATE NAMESPACE IF NOT EXISTS bronze_catalog.nyc_taxi")
 
-# Write the cleaned data
-df.writeTo("bronze_catalog.nyc_taxi.yellow_taxi").createOrReplace()
+df.writeTo("bronze_catalog.default.yellow_taxi").createOrReplace()

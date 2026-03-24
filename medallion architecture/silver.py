@@ -67,8 +67,6 @@ print("### Writing to silver")
 # classic minIO
 # df.write.mode("overwrite").parquet("s3a://silver/yellow_tripdata_2025.parquet")
 
-# Write to Silver Iceberg table
-spark.sql("CREATE NAMESPACE IF NOT EXISTS silver_catalog.nyc_taxi")
 
 # Write the cleaned data
-df.writeTo("silver_catalog.nyc_taxi.yellow_taxi").createOrReplace()
+df.writeTo("silver_catalog.default.yellow_taxi").createOrReplace()

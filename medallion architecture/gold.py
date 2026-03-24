@@ -17,7 +17,7 @@ spark = SparkSession.builder \
 
 
 # Read from Iceberg
-df = spark.read.table("local.silver.yellow_taxi")
+df = spark.read.table("silver_catalog.default.yellow_taxi")
 print("### Reading silver data, aggregating")
 #df_parquet.printSchema()
 #df_parquet.limit(15).show()
@@ -133,8 +133,5 @@ print("### Writing to gold")
 # classic minIO
 # df.write.mode("overwrite").parquet("s3a://gold/yellow_tripdata_2025.parquet")
 
-# Write to Gold Iceberg table
-spark.sql("CREATE NAMESPACE IF NOT EXISTS gold_catalog.nyc_taxi")
-
 # Write the cleaned data
-df.writeTo("gold_catalog.nyc_taxi.yellow_taxi").createOrReplace()
+df.writeTo("gold_catalog.default.yellow_taxi").createOrReplace()
