@@ -4,12 +4,12 @@ from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
 spark = SparkSession.builder \
-    .appName("demo") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
-    .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
-    .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
+    .appName("GoldLayer") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://10.140.0.4:9001") \
+    .config("spark.hadoop.fs.s3a.access.key", "admin") \
+    .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
-    .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false") \
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
 
 
