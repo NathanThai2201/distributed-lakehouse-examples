@@ -33,7 +33,7 @@ df = df.dropDuplicates()
 #df.limit(20).show()
 # print("dropped all duplicates: ",df.count())
 
-df = df.fillna('None',subset=['originating_base_num'])
+# df = df.fillna('None',subset=['originating_base_num'])
 
 
 # filtering bad values
@@ -49,9 +49,10 @@ df = df.filter(
 )
 #df.sort(col('tolls').asc()).show() 
 
+
 df = df.withColumn(
     "trip_duration_minutes",
-    expr("timestampdiff(MINUTE, tpep_pickup_datetime, tpep_dropoff_datetime)")
+    (unix_timestamp(col("tpep_dropoff_datetime")) - unix_timestamp(col("tpep_pickup_datetime"))) / 60
 )
 
 df = df.filter(col("trip_duration_minutes") > 0)

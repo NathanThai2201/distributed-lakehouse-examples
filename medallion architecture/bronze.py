@@ -13,9 +13,9 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 
-# temporarily using s3a storage instead of wget
+df = spark.read.parquet("hdfs://namenode:9000/data/yellow_tripdata_2025.parquet")
 #df = spark.read.parquet("hdfs://namenode:9000/data/bronze/")
-df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
+
 
 
 
