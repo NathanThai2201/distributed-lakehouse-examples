@@ -12,16 +12,19 @@ spark = SparkSession.builder \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
 
+# classic minIO
+# df_parquet = spark.read.parquet("s3a://silver/yellow_tripdata_2025.parquet")
 
-df_parquet = spark.read.parquet("s3a://silver/yellow_tripdata_2025.parquet")
 
-print("### Reading gold data, aggregating")
+# Read from Iceberg
+df = spark.read.table("local.silver.yellow_taxi")
+print("### Reading silver data, aggregating")
 #df_parquet.printSchema()
 #df_parquet.limit(15).show()
 
 
 # trip duration:
-df = df_parquet.withColumn(
+df = df.withColumn(
     "trip_duration_minutes",
     expr("timestampdiff(MINUTE, tpep_pickup_datetime, tpep_dropoff_datetime)")
 )
@@ -126,4 +129,12 @@ df = df.withColumn("revenue_per_minute", round(col("revenue_per_minute"), 2))
 df.show()
 
 print("### Writing to gold")
-df.write.mode("overwrite").parquet("s3a://gold/yellow_tripdata_2025.parquet")
+
+# classic minIO
+# df.write.mode("overwrite").parquet("s3a://gold/yellow_tripdata_2025.parquet")
+
+# Write to Gold Iceberg table
+spark.sql("CREATE NAMESPACE IF NOT EXISTS gold_catalog.nyc_taxi")
+
+# Write the cleaned data
+df.writeTo("gold_catalog.nyc_taxi.yellow_taxi").createOrReplace()

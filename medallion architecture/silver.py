@@ -12,11 +12,14 @@ spark = SparkSession.builder \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
 
+# Classic minIO
+# df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
 
-df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
+# Read from Iceberg
+df = spark.read.table("bronze_catalog.default.yellow_taxi")
+
 
 print("### Reading bronze data, cleaning")
-#df_parquet = spark.read.parquet("hdfs://instance-20260312-012701:9000/data/yellow_tripdata_2025-01.parquet")
 #df.printSchema()
 #df.limit(20).show()
 #print("original: ",df.count())
@@ -58,4 +61,14 @@ df = df.withColumn(
 df = df.filter(col("trip_duration_minutes") > 0)
 
 print("### Writing to silver")
-df.write.mode("overwrite").parquet("s3a://silver/yellow_tripdata_2025.parquet")
+
+
+
+# classic minIO
+# df.write.mode("overwrite").parquet("s3a://silver/yellow_tripdata_2025.parquet")
+
+# Write to Silver Iceberg table
+spark.sql("CREATE NAMESPACE IF NOT EXISTS silver_catalog.nyc_taxi")
+
+# Write the cleaned data
+df.writeTo("silver_catalog.nyc_taxi.yellow_taxi").createOrReplace()
