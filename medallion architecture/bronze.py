@@ -14,9 +14,11 @@ spark = SparkSession.builder \
 
 
 # temporarily using s3a storage instead of wget
-df = spark.read.parquet("hdfs://namenode:9000/data/bronze/")
-#df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
-#df = spark.read.parquet("hdfs://instance-20260312-012701:9000/data/bronze/")
+#df = spark.read.parquet("hdfs://namenode:9000/data/bronze/")
+df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
+
+
+
 # df = spark.read.parquet('../test_folder/yellow_tripdata_2025-01.parquet',
 #                         '../test_folder/yellow_tripdata_2025-02.parquet',
 #                         '../test_folder/yellow_tripdata_2025-03.parquet',
