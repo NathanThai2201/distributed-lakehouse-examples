@@ -4,7 +4,7 @@ from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
 spark = SparkSession.builder \
-    .appName("BronzeLayer") \
+    .appName("GoldLayer") \
     .config("spark.hadoop.fs.s3a.endpoint", "http://10.140.0.4:9001") \
     .config("spark.hadoop.fs.s3a.access.key", "admin") \
     .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
@@ -13,17 +13,15 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 
+df_tips = spark.read.table("gold_catalog.default.taxi_tips")
+df_performance = spark.read.table("gold_catalog.default.taxi_performance")
+df_financials = spark.read.table("gold_catalog.default.taxi_financials")
+df_class = spark.read.table("gold_catalog.default.taxi_classifications")
 
 
+print("### Reading gold data:")
 
-bronze_taxi_path = "s3a://bronze/default/yellow_taxi.parquet"
-bronze_lookup_path = "s3a://bronze/default/yellow_taxi_lookup.csv"
-
-# Read the Parquet data
-df = spark.read.parquet(bronze_taxi_path)
-
-# Read the CSV data (ensure you keep the header and schema inference)
-df_lookup = spark.read \
-    .option("header", True) \
-    .option("inferSchema", True) \
-    .csv(bronze_lookup_path)
+df_tips.show()
+df_performance.show()
+df_financials.show()
+df_class.show()

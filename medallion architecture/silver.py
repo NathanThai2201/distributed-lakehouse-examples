@@ -15,8 +15,27 @@ spark = SparkSession.builder \
 # Classic minIO
 # df = spark.read.parquet("s3a://bronze/yellow_tripdata_2025.parquet")
 
-# Read from Iceberg
-df = spark.read.table("bronze_catalog.default.yellow_taxi")
+
+
+
+
+
+
+bronze_taxi_path = "s3a://bronze/default/yellow_taxi.parquet"
+bronze_lookup_path = "s3a://bronze/default/yellow_taxi_lookup.csv"
+
+# Read the Parquet data
+df = spark.read.parquet(bronze_taxi_path)
+
+# Read the CSV data (ensure you keep the header and schema inference)
+df_lookup = spark.read \
+    .option("header", True) \
+    .option("inferSchema", True) \
+    .csv(bronze_lookup_path)
+
+
+
+
 
 
 print("### Reading bronze data, cleaning")
@@ -30,8 +49,6 @@ df = df.dropna('all')
 # print("dropped NULLs: ",df.count())
 
 df = df.dropDuplicates()
-
-
 
 #df.limit(20).show()
 # print("dropped all duplicates: ",df.count())
@@ -60,6 +77,29 @@ df = df.withColumn(
 
 df = df.filter(col("trip_duration_minutes") > 0)
 
+
+
+
+# joining tables of tripdata and location lookup
+# Alias lookup table twice
+pu_lookup = df_lookup.alias("pu")
+do_lookup = df_lookup.alias("do")
+
+# Join
+df_joined = (
+    df
+    .join(pu_lookup, col("PULocationID") == col("pu.LocationID"), "left")
+    .join(do_lookup, col("DOLocationID") == col("do.LocationID"), "left")
+    .select(
+        df["*"],  # only original columns
+        col("pu.Borough").alias("PUBorough"),
+        col("pu.Zone").alias("PUZone"),
+        col("pu.service_zone").alias("PUservice_zone"),
+        col("do.Borough").alias("DOBorough"),
+        col("do.Zone").alias("DOZone"),
+        col("do.service_zone").alias("DOservice_zone"),
+    )
+)
 print("### Writing to silver")
 
 
@@ -69,4 +109,4 @@ print("### Writing to silver")
 
 
 # Write the cleaned data
-df.writeTo("silver_catalog.default.yellow_taxi").createOrReplace()
+df_joined.writeTo("silver_catalog.default.yellow_taxi").createOrReplace()

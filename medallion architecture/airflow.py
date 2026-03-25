@@ -59,6 +59,34 @@ with DAG(
     # #     --conf spark.dynamicAllocation.enabled=false \
     # #     --conf spark.executor.instances=1 \
 
+    ingestion = BashOperator(
+        task_id="bronze_layer",
+        bash_command="""
+        /opt/spark/bin/spark-submit \
+        --master yarn \
+        --deploy-mode client \
+        --conf spark.yarn.jars="local:/opt/spark/jars/*" \
+        --driver-memory 512M \
+        --executor-memory 512M \
+        --executor-cores 1 \
+        --conf spark.yarn.am.memory=512M \
+        --conf spark.dynamicAllocation.enabled=false \
+        --conf spark.executor.instances=1 \
+        --packages org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.4.3,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \
+        --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+        --conf spark.sql.catalog.bronze_catalog=org.apache.iceberg.spark.SparkCatalog \
+        --conf spark.sql.catalog.bronze_catalog.type=hadoop \
+        --conf spark.sql.catalog.bronze_catalog.warehouse=s3a://bronze/ \
+        --conf spark.hadoop.fs.s3a.endpoint=http://10.140.0.4:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=admin \
+        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        /home/n3cr0d3m0nncrdmn/ingestion.py
+    """
+    )
+
     bronze = BashOperator(
         task_id="bronze_layer",
         bash_command="""
@@ -149,5 +177,32 @@ with DAG(
     """
     )
 
-    bronze >> silver >> gold 
+    gold_analysis = BashOperator(
+        task_id="gold_layer",
+        bash_command="""
+        /opt/spark/bin/spark-submit \
+        --master yarn \
+        --deploy-mode client \
+        --conf spark.yarn.jars="local:/opt/spark/jars/*" \
+        --driver-memory 512M \
+        --executor-memory 512M \
+        --executor-cores 1 \
+        --conf spark.yarn.am.memory=512M \
+        --conf spark.dynamicAllocation.enabled=false \
+        --conf spark.executor.instances=1 \
+        --packages org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.4.3,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \
+        --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+        --conf spark.sql.catalog.gold_catalog=org.apache.iceberg.spark.SparkCatalog \
+        --conf spark.sql.catalog.gold_catalog.type=hadoop \
+        --conf spark.sql.catalog.gold_catalog.warehouse=s3a://gold/ \
+        --conf spark.hadoop.fs.s3a.endpoint=http://10.140.0.4:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=admin \
+        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        /home/n3cr0d3m0nncrdmn/gold_analysis.py
+    """
+    )
+    ingestion >> bronze >> silver >> gold >> gold_analysis
    #download_data >> create_bronze_dir >> upload_to_bronze >> bronze >> silver >> gold
