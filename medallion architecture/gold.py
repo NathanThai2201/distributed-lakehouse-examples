@@ -54,7 +54,7 @@ tip_df.writeTo("gold_catalog.default.taxi_tips").createOrReplace()
 # Duration, Speed, and Efficiency
 print("### Creating Trip Performance Table")
 performance_df = df_base.select(
-    "VendorID", "tpep_pickup_datetime",
+    "VendorID", "tpep_pickup_datetime", "trip_distance",
     "trip_duration_minutes",
     round(when(col("trip_duration_minutes") > 0, 
                col("trip_distance") / (col("trip_duration_minutes") / 60)).otherwise(0), 2).alias("avg_speed_mph"),
