@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
 default_args = {
@@ -12,7 +12,7 @@ default_args = {
 with DAG(
     dag_id="spark_hdfs_medallion_pipeline",
     default_args=default_args,
-    schedule_interval="@daily",
+    schedule_interval="@hourly",
     catchup=False
 ) as dag:
     
