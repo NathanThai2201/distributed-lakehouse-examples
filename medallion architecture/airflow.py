@@ -59,8 +59,17 @@ with DAG(
     # #     --conf spark.dynamicAllocation.enabled=false \
     # #     --conf spark.executor.instances=1 \
 
+    # file setup for version 1: no streaming data.
+    file_setup = BashOperator(
+        task_id="file_setup",
+        bash_command="""
+            hdfs dfs -mkdir -p /data/
+            hdfs dfs -put -f /home/n3cr0d3m0nncrdmn/data/yellow_tripdata_2025.parquet /data/
+            hdfs dfs -put -f /home/n3cr0d3m0nncrdmn/data/taxi_zone_lookup.csv /data/
+        """
+    )
     ingestion = BashOperator(
-        task_id="bronze_layer",
+        task_id="ingestion",
         bash_command="""
         /opt/spark/bin/spark-submit \
         --master yarn \
@@ -88,7 +97,7 @@ with DAG(
     )
 
     bronze = BashOperator(
-        task_id="bronze_layer",
+        task_id="bronze",
         bash_command="""
         /opt/spark/bin/spark-submit \
         --master yarn \
@@ -116,7 +125,7 @@ with DAG(
     )
 
     silver = BashOperator(
-        task_id="silver_layer",
+        task_id="silver",
         bash_command="""
         /opt/spark/bin/spark-submit \
         --master yarn \
@@ -147,7 +156,7 @@ with DAG(
     )
 
     gold = BashOperator(
-        task_id="gold_layer",
+        task_id="gold",
         bash_command="""
         /opt/spark/bin/spark-submit \
         --master yarn \
@@ -177,8 +186,8 @@ with DAG(
     """
     )
 
-    gold_analysis = BashOperator(
-        task_id="gold_layer",
+    learning = BashOperator(
+        task_id="learning",
         bash_command="""
         /opt/spark/bin/spark-submit \
         --master yarn \
@@ -201,8 +210,8 @@ with DAG(
         --conf spark.hadoop.fs.s3a.path.style.access=true \
         --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
         --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
-        /home/n3cr0d3m0nncrdmn/gold_analysis.py
+        /home/n3cr0d3m0nncrdmn/learning.py
     """
     )
-    ingestion >> bronze >> silver >> gold >> gold_analysis
+    file_setup >> ingestion >> bronze >> silver >> gold >> learning
    #download_data >> create_bronze_dir >> upload_to_bronze >> bronze >> silver >> gold

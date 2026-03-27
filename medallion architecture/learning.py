@@ -4,7 +4,7 @@ from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
 spark = SparkSession.builder \
-    .appName("GoldLayer") \
+    .appName("Learning") \
     .config("spark.hadoop.fs.s3a.endpoint", "http://10.140.0.4:9001") \
     .config("spark.hadoop.fs.s3a.access.key", "admin") \
     .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
