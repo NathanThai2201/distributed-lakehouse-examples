@@ -1,0 +1,125 @@
+services:
+
+  # ---------------- HDFS ----------------
+  namenode:
+    image: bitnami/hadoop:3.3
+    container_name: namenode
+    hostname: namenode
+    environment:
+      - HADOOP_MODE=namenode
+    ports:
+      - "9870:9870"
+    volumes:
+      - namenode-data:/bitnami/hadoop/dfs/name
+
+  datanode1:
+    image: bitnami/hadoop:3.3
+    hostname: datanode1
+    environment:
+      - HADOOP_MODE=datanode
+      - HADOOP_NAMENODE_HOST=namenode
+    depends_on:
+      - namenode
+    volumes:
+      - datanode1-data:/bitnami/hadoop/dfs/data
+
+  datanode2:
+    image: bitnami/hadoop:3.3
+    hostname: datanode2
+    environment:
+      - HADOOP_MODE=datanode
+      - HADOOP_NAMENODE_HOST=namenode
+    depends_on:
+      - namenode
+    volumes:
+      - datanode2-data:/bitnami/hadoop/dfs/data
+
+  # ---------------- YARN ----------------
+  resourcemanager:
+    image: bitnami/hadoop:3.3
+    container_name: resourcemanager
+    hostname: resourcemanager
+    environment:
+      - HADOOP_MODE=resourcemanager
+      - HADOOP_NAMENODE_HOST=namenode
+    ports:
+      - "8088:8088"
+    depends_on:
+      - namenode
+
+  nodemanager1:
+    image: bitnami/hadoop:3.3
+    hostname: nodemanager1
+    environment:
+      - HADOOP_MODE=nodemanager
+      - HADOOP_RESOURCEMANAGER_HOST=resourcemanager
+    depends_on:
+      - resourcemanager
+
+  nodemanager2:
+    image: bitnami/hadoop:3.3
+    hostname: nodemanager2
+    environment:
+      - HADOOP_MODE=nodemanager
+      - HADOOP_RESOURCEMANAGER_HOST=resourcemanager
+    depends_on:
+      - resourcemanager
+
+  # ---------------- SPARK ----------------
+  spark-master:
+    build: ./spark
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+
+  spark-worker-1:
+    build: ./spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+
+  spark-worker-2:
+    build: ./spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+
+  # ---------------- MINIO ----------------
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9002"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: 12345678
+    ports:
+      - "9001:9001"
+      - "9002:9002"
+    volumes:
+      - minio-data:/data
+
+  # ---------------- AIRFLOW ----------------
+  airflow-web:
+    image: apache/airflow:2.9.0
+    container_name: airflow-web
+    ports:
+      - "8081:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - airflow-web
+    command: scheduler
+
+volumes:
+  namenode-data:
+  datanode1-data:
+  datanode2-data:
+  minio-data:

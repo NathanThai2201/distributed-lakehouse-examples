@@ -100,6 +100,8 @@ df_joined = (
         col("do.service_zone").alias("DOservice_zone"),
     )
 )
+
+df_joined.show()
 print("### Writing to silver")
 
 
