@@ -4,8 +4,10 @@ from pyspark.sql.types import * # StructType, StructField
 import os
 from datetime import datetime, date
 
+
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
+
 
 
 spark = SparkSession.builder \
