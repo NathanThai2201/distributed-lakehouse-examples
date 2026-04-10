@@ -10,7 +10,7 @@ from pyspark.ml.feature import VectorAssembler
 
 spark = SparkSession.builder \
     .appName("Learning") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://10.10.12.3:9001") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://192.168.101.2:9001") \
     .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
     .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \

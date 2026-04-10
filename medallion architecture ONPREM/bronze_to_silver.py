@@ -5,7 +5,7 @@ import os
 from datetime import datetime, date
 spark = SparkSession.builder \
     .appName("SilverLayer") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://10.10.12.3:9001") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://192.168.101.2:9001") \
     .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
     .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
@@ -21,8 +21,8 @@ spark = SparkSession.builder \
 
 
 
-bronze_taxi_path = "s3a://bronze/default/yellow_taxi.parquet"
-bronze_lookup_path = "s3a://bronze/default/yellow_taxi_lookup.csv"
+bronze_taxi_path = "s3a://bronze/raw/yellow_taxi.parquet"
+bronze_lookup_path = "s3a://bronze/raw/yellow_taxi_lookup.csv"
 
 # Read the Parquet data
 df = spark.read.parquet(bronze_taxi_path)
