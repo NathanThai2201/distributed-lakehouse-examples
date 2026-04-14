@@ -1,4 +1,4 @@
-from airflow import DAG
+from airflow import DAG # type: ignore
 from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
