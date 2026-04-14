@@ -38,7 +38,7 @@ with DAG(
             "AWS_ENDPOINT_URL": "http://192.168.101.2:9001"
         },
         bash_command="""
-            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_tripdata_2025-1.parquet s3://bronze/raw/yellow_taxi.parquet
+            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_tripdata_2025-01.parquet s3://bronze/raw/yellow_taxi.parquet
             aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/taxi_zone_lookup.csv s3://bronze/raw/yellow_taxi_lookup.csv
         """
     )

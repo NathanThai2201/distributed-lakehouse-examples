@@ -7,14 +7,21 @@ from datetime import datetime, date
 
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
+import configparser
 
+config = configparser.ConfigParser()
+config.read("/home/ubuntu/scripts/config.ini")
 
+# MinIO configs
+endpoint = config["minio"]["endpoint"]
+access_key = config["minio"]["access_key"]
+secret_key = config["minio"]["secret_key"]
 
 spark = SparkSession.builder \
-    .appName("Learning") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://192.168.101.2:9001") \
-    .config("spark.hadoop.fs.s3a.access.key", "admin") \
-    .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
+    .appName("LearningGold") \
+    .config("spark.hadoop.fs.s3a.endpoint", endpoint) \
+    .config("spark.hadoop.fs.s3a.access.key", access_key) \
+    .config("spark.hadoop.fs.s3a.secret.key", secret_key) \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
