@@ -3,6 +3,18 @@ from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
 
+MINIO_ENDPOINT = "http://192.168.101.2:9001"
+MINIO_ACCESS_KEY = "admin"
+MINIO_SECRET_KEY = "12345678"
+
+S3A_CONF = f"""
+--conf spark.hadoop.fs.s3a.endpoint={MINIO_ENDPOINT} \
+--conf spark.hadoop.fs.s3a.access.key={MINIO_ACCESS_KEY} \
+--conf spark.hadoop.fs.s3a.secret.key={MINIO_SECRET_KEY} \
+--conf spark.hadoop.fs.s3a.path.style.access=true \
+--conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+--conf spark.hadoop.fs.s3a.connection.ssl.enabled=false
+"""
 
 default_args = {
     "owner": "you",
@@ -26,8 +38,8 @@ with DAG(
             "AWS_ENDPOINT_URL": "http://192.168.101.2:9001"
         },
         bash_command="""
-            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_taxi.parquet s3://bronze/raw/yellow_taxi.parquet
-            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_taxi_lookup.csv s3://bronze/raw/yellow_taxi_lookup.csv
+            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_tripdata_2025-1.parquet s3://bronze/raw/yellow_taxi.parquet
+            aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/taxi_zone_lookup.csv s3://bronze/raw/yellow_taxi_lookup.csv
         """
     )
 
@@ -62,13 +74,8 @@ with DAG(
         --conf spark.sql.catalog.silver_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.silver_catalog.type=hadoop \
         --conf spark.sql.catalog.silver_catalog.warehouse=s3a://silver/ \
-        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.2:9001 \
-        --conf spark.hadoop.fs.s3a.access.key=admin \
-        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
-        --conf spark.hadoop.fs.s3a.path.style.access=true \
-        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
-        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
-        /home/ubuntu/nathai_scripts/bronze_to_silver.py
+        {S3A_CONF} \
+        /home/ubuntu/scripts/bronze_to_silver.py
         """
     )
 
@@ -104,13 +111,8 @@ with DAG(
         --conf spark.sql.catalog.gold_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.gold_catalog.type=hadoop \
         --conf spark.sql.catalog.gold_catalog.warehouse=s3a://gold/ \
-        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.2:9001 \
-        --conf spark.hadoop.fs.s3a.access.key=admin \
-        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
-        --conf spark.hadoop.fs.s3a.path.style.access=true \
-        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
-        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
-        /home/ubuntu/nathai_scripts/silver_to_gold.py
+        {S3A_CONF} \
+        /home/ubuntu/scripts/silver_to_gold.py
         """
     )
 
@@ -142,13 +144,8 @@ with DAG(
         --conf spark.sql.catalog.bronze_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.bronze_catalog.type=hadoop \
         --conf spark.sql.catalog.bronze_catalog.warehouse=s3a://bronze/ \
-        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.2:9001 \
-        --conf spark.hadoop.fs.s3a.access.key=admin \
-        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
-        --conf spark.hadoop.fs.s3a.path.style.access=true \
-        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
-        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
-        /home/ubuntu/nathai_scripts/read_bronze.py
+        {S3A_CONF} \
+        /home/ubuntu/scripts/read_bronze.py
         """
     )
 
@@ -179,13 +176,8 @@ with DAG(
         --conf spark.sql.catalog.gold_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.gold_catalog.type=hadoop \
         --conf spark.sql.catalog.gold_catalog.warehouse=s3a://gold/ \
-        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.2:9001 \
-        --conf spark.hadoop.fs.s3a.access.key=admin \
-        --conf spark.hadoop.fs.s3a.secret.key=12345678 \
-        --conf spark.hadoop.fs.s3a.path.style.access=true \
-        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
-        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
-        /home/ubuntu/nathai_scripts/learning_gold.py
+        {S3A_CONF} \
+        /home/ubuntu/scripts/learning_gold.py
         """
     )
 

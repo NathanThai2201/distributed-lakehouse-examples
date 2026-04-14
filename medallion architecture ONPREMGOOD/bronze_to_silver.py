@@ -6,8 +6,8 @@ from datetime import datetime, date
 spark = SparkSession.builder \
     .appName("SilverLayer") \
     .config("spark.hadoop.fs.s3a.endpoint", "http://192.168.101.2:9001") \
-    .config("spark.hadoop.fs.s3a.access.key", "minioadmin") \
-    .config("spark.hadoop.fs.s3a.secret.key", "minioadmin") \
+    .config("spark.hadoop.fs.s3a.access.key", "admin") \
+    .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
