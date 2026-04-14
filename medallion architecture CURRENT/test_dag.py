@@ -3,7 +3,7 @@ from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
 
-MINIO_ENDPOINT = "http://192.168.101.2:9001"
+MINIO_ENDPOINT = "http://192.168.101.66:9001"
 MINIO_ACCESS_KEY = "admin"
 MINIO_SECRET_KEY = "12345678"
 
@@ -35,7 +35,7 @@ with DAG(
         env={
             "AWS_ACCESS_KEY_ID": "minioadmin",
             "AWS_SECRET_ACCESS_KEY": "minioadmin",
-            "AWS_ENDPOINT_URL": "http://192.168.101.2:9001"
+            "AWS_ENDPOINT_URL": "http://192.168.101.66:9001"
         },
         bash_command="""
             aws --endpoint-url $AWS_ENDPOINT_URL s3 cp /home/ubuntu/data/yellow_tripdata_2025-01.parquet s3://bronze/raw/yellow_taxi.parquet
