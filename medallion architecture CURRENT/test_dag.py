@@ -3,18 +3,6 @@ from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
 
-MINIO_ENDPOINT = "http://192.168.101.66:9001"
-MINIO_ACCESS_KEY = "admin"
-MINIO_SECRET_KEY = "12345678"
-
-S3A_CONF = f"""
---conf spark.hadoop.fs.s3a.endpoint={MINIO_ENDPOINT} \
---conf spark.hadoop.fs.s3a.access.key={MINIO_ACCESS_KEY} \
---conf spark.hadoop.fs.s3a.secret.key={MINIO_SECRET_KEY} \
---conf spark.hadoop.fs.s3a.path.style.access=true \
---conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
---conf spark.hadoop.fs.s3a.connection.ssl.enabled=false
-"""
 
 default_args = {
     "owner": "you",
@@ -74,7 +62,12 @@ with DAG(
         --conf spark.sql.catalog.silver_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.silver_catalog.type=hadoop \
         --conf spark.sql.catalog.silver_catalog.warehouse=s3a://silver/ \
-        {S3A_CONF} \
+        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.66:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.secret.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
         /home/ubuntu/scripts/bronze_to_silver.py
         """
     )
@@ -111,7 +104,12 @@ with DAG(
         --conf spark.sql.catalog.gold_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.gold_catalog.type=hadoop \
         --conf spark.sql.catalog.gold_catalog.warehouse=s3a://gold/ \
-        {S3A_CONF} \
+        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.66:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.secret.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
         /home/ubuntu/scripts/silver_to_gold.py
         """
     )
@@ -144,7 +142,12 @@ with DAG(
         --conf spark.sql.catalog.bronze_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.bronze_catalog.type=hadoop \
         --conf spark.sql.catalog.bronze_catalog.warehouse=s3a://bronze/ \
-        {S3A_CONF} \
+        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.66:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.secret.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
         /home/ubuntu/scripts/read_bronze.py
         """
     )
@@ -176,7 +179,12 @@ with DAG(
         --conf spark.sql.catalog.gold_catalog=org.apache.iceberg.spark.SparkCatalog \
         --conf spark.sql.catalog.gold_catalog.type=hadoop \
         --conf spark.sql.catalog.gold_catalog.warehouse=s3a://gold/ \
-        {S3A_CONF} \
+        --conf spark.hadoop.fs.s3a.endpoint=http://192.168.101.66:9001 \
+        --conf spark.hadoop.fs.s3a.access.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.secret.key=minioadmin \
+        --conf spark.hadoop.fs.s3a.path.style.access=true \
+        --conf spark.hadoop.fs.s3a.connection.ssl.enabled=false \
+        --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
         /home/ubuntu/scripts/learning_gold.py
         """
     )
