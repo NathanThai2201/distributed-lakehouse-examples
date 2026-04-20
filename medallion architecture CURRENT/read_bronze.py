@@ -1,38 +1,42 @@
-from pyspark.sql import SparkSession, Row
-from pyspark.sql.functions import * # col, from_json, split, when, avg
-from pyspark.sql.types import * # StructType, StructField
-import os
-from datetime import datetime, date
-import configparser
-
-config = configparser.ConfigParser()
-config.read("/home/ubuntu/scripts/config.ini")
-
-# MinIO configs
-endpoint = config["minio"]["endpoint"]
-access_key = config["minio"]["access_key"]
-secret_key = config["minio"]["secret_key"]
+from pyspark.sql import SparkSession
 
 spark = SparkSession.builder \
     .appName("ReadBronze") \
-    .config("spark.hadoop.fs.s3a.endpoint", endpoint) \
-    .config("spark.hadoop.fs.s3a.access.key", access_key) \
-    .config("spark.hadoop.fs.s3a.secret.key", secret_key) \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://192.168.100.66:9001") \
+    .config("spark.hadoop.fs.s3a.access.key", "admin") \
+    .config("spark.hadoop.fs.s3a.secret.key", "12345678") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
 
+sc = spark.sparkContext
+jvm = sc._jvm
+hadoop_conf = sc._jsc.hadoopConfiguration()
 
+patterns = {
+    "yellow_tripdata": "s3a://bronze/raw/yellow_tripdata_*.parquet",
+    "green_tripdata": "s3a://bronze/raw/green_tripdata_*.parquet",
+    "fhv_tripdata": "s3a://bronze/raw/fhv_tripdata_*.parquet",
+    "fhvhv_tripdata": "s3a://bronze/raw/fhvhv_tripdata_*.parquet",
+}
 
+for name, pattern in patterns.items():
+    print(f"### Bronze schema sample: {name}")
 
-bronze_taxi_path = "s3a://bronze/raw/yellow_taxi.parquet"
-bronze_lookup_path = "s3a://bronze/raw/yellow_taxi_lookup.csv"
+    path_obj = jvm.org.apache.hadoop.fs.Path(pattern)
+    fs = path_obj.getFileSystem(hadoop_conf)
+    statuses = fs.globStatus(path_obj)
 
-# Read the Parquet data
-df = spark.read.parquet(bronze_taxi_path)
+    if not statuses:
+        print(f"No files matched: {pattern}")
+        print()
+        continue
 
-# Read the CSV data (ensure you keep the header and schema inference)
-df_lookup = spark.read \
-    .option("header", True) \
-    .option("inferSchema", True) \
-    .csv(bronze_lookup_path)
+    sample_paths = sorted([status.getPath().toString() for status in statuses])[:2]
+
+    for idx, sample_path in enumerate(sample_paths, start=1):
+        print(f"#### File {idx}: {sample_path}")
+        df = spark.read.parquet(sample_path)
+        df.printSchema()
+        df.show(5, truncate=False)
+        print()
