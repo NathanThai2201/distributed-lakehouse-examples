@@ -3,6 +3,7 @@ import json
 import random
 import pandas as pd
 from confluent_kafka import Producer #type: ignore
+from datetime import datetime, timedelta
 
 # Kafka config
 conf = {
@@ -23,13 +24,18 @@ def delivery_report(err, msg):
     #     print(f"Sent to {msg.topic()} [{msg.partition()}]")
 
 while True:
-    # Pick random row
     row = df.sample(1).to_dict(orient="records")[0]
 
-    # Convert to JSON
+    # Generate timestamps
+    dropoff = datetime.now()
+    pickup = dropoff - timedelta(minutes=random.randint(0, 60))
+
+    # Format to Spark-style timestamp string
+    row["Trip_Dropoff_DateTime"] = dropoff.strftime("%Y-%m-%d %H:%M:%S")
+    row["Trip_Pickup_DateTime"] = pickup.strftime("%Y-%m-%d %H:%M:%S")
+
     message = json.dumps(row, default=str)
 
-    # Send to Kafka
     producer.produce(
         topic="quickstart-events",
         value=message,
@@ -40,5 +46,4 @@ while True:
 
     print(f"Sent: {message[:100]}...")
 
-    # Control speed (adjust as needed)
     time.sleep(random.uniform(0.5, 2))
