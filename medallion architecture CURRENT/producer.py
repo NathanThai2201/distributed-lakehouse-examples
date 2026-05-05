@@ -31,13 +31,13 @@ while True:
     pickup = dropoff - timedelta(minutes=random.randint(0, 60))
 
     # Format to Spark-style timestamp string
-    row["Trip_Dropoff_DateTime"] = dropoff.strftime("%Y-%m-%d %H:%M:%S")
-    row["Trip_Pickup_DateTime"] = pickup.strftime("%Y-%m-%d %H:%M:%S")
+    row["tpep_dropoff_datetime"] = dropoff.strftime("%Y-%m-%d %H:%M:%S")
+    row["tpep_pickup_datetime"] = pickup.strftime("%Y-%m-%d %H:%M:%S")
 
     message = json.dumps(row, default=str)
 
     producer.produce(
-        topic="quickstart-events",
+        topic="yellow-tripdata",
         value=message,
         callback=delivery_report
     )
