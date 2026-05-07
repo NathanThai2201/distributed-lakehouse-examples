@@ -1,4 +1,5 @@
 **/nyctripdata
 
+.DS_Store
 test_folder/*
 !test_folder/.gitkeep
