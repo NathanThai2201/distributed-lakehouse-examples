@@ -42,14 +42,7 @@ def run_pca(sample_fraction=0.2, k=5):
     print("Loading data...")
     df = spark.table(TABLE)
 
-    # ---------- FHV FILTER ----------
-    print("Filtering FHV trips...")
-    if "dispatching_base_num" in df.columns:
-        df = df.filter(F.col("dispatching_base_num").isNotNull())
-    elif "service_type" in df.columns:
-        df = df.filter(F.col("service_type") == "fhv")
-    else:
-        raise ValueError("No FHV indicator column found")
+    print("Running PCA on yellow taxi trips...")
 
     print("Selecting numeric columns...")
     num_cols = get_numeric_cols(df)
